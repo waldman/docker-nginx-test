@@ -1,0 +1,34 @@
+server {
+    listen 8080 default_server;
+    listen [::]:8080 default_server ipv6only=on;
+
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+
+    server_name localhost;
+
+    location ~ /hello/([-_a-zA-Z0-9/]+) {
+        default_type 'text/plain';
+        set $name $1;
+
+        content_by_lua '
+        ngx.say("Hello ", ngx.var.name, "!")
+        ngx.say("Running on server: ", ngx.var.hostname)
+        ';
+    }
+
+    location ~ /sum/([0-9]+)/([0-9]+) {
+        default_type 'text/plain';
+        set $a $1;
+        set $b $2;
+
+        content_by_lua '
+        sum = tonumber(ngx.var.a) + tonumber(ngx.var.b)
+        ngx.say(sum)
+        ';
+    }
+    location / {
+        default_type 'text/plain';
+        content_by_lua "ngx.say('Hi there')";
+    }
+}
